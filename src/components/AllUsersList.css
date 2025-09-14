@@ -1,0 +1,147 @@
+.all-users-list {
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+.all-users-list__table {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.all-users-list__base-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1.5fr;
+  border-bottom: 1px solid #eaecf0;
+  align-items: center;
+}
+
+.all-users-list__base-cell {
+  text-align: left;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.25px;
+}
+
+.all-users-list__header-row {
+  background: #f9fafb;
+  padding: 0 24px;
+  height: 56px;
+}
+
+.all-users-list__header-cell {
+  font-weight: 500;
+  color: #667085;
+}
+
+.all-users-list__content-row {
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 52px;
+}
+
+.all-users-list__content-row:hover {
+  background-color: #f9fafb;
+}
+
+.all-users-list__content-row:last-child {
+  border-bottom: none;
+}
+
+.all-users-list__content-cell {
+  font-weight: 400;
+  color: #161719;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.all-users-list__content-cell--name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.all-users-list__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+.all-users-list__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.all-users-list__name {
+  font-weight: 500;
+  color: #161719;
+}
+
+.all-users-list__content-cell--email {
+  color: #667085;
+}
+
+.all-users-list__content-cell--age {
+  color: #161719;
+}
+
+.all-users-list__content-cell--location {
+  color: #667085;
+}
+
+@media (max-width: 768px) {
+  .all-users-list__header-row,
+  .all-users-list__content-row {
+    height: auto;   
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+  }
+  
+  .all-users-list__header-cell,
+  .all-users-list__content-cell {
+    border-bottom: 1px solid #eaecf0;
+    padding: 8px 0;
+  }
+  
+  .all-users-list__header-cell:last-child,
+  .all-users-list__content-cell:last-child {
+    border-bottom: none;
+  }
+  
+  .all-users-list__content-cell--name {
+    order: 1;
+  }
+  
+  .all-users-list__content-cell--email {
+    order: 2;
+  }
+  
+  .all-users-list__content-cell--age {
+    order: 3;
+  }
+  
+  .all-users-list__content-cell--location {
+    order: 4;
+  }
+}
+
+@media (max-width: 480px) {
+  .all-users-list__table {
+    margin: 0 -16px;
+    border-radius: 0;
+  }
+  
+  .all-users-list__header-row,
+  .all-users-list__content-row {
+    padding: 12px 16px;
+  }
+}

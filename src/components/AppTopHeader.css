@@ -1,0 +1,36 @@
+.app-top-header {
+  background: white;
+  border-bottom: 1px solid #e6e7e9;
+  padding: 12px 24px 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.app-top-header__logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #161719;
+  letter-spacing: -0.5px;
+}
+
+.app-top-header__avatar {
+  background: rgba(44, 45, 48, 0.12);
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-size: 18px;
+  color: #161719;
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 768px) {
+  .app-top-header {
+    padding: 12px 16px;
+  }
+}
