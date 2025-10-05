@@ -1,0 +1,152 @@
+.container {
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+.table {
+  width: 100%;
+  background: var(--color-bg-surface);
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1.5fr;
+  border-bottom: 1px solid #eaecf0;
+  align-items: center;
+}
+
+.cell {
+  text-align: left;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.25px;
+}
+
+.headerRow {
+  background: var(--color-bg-subtle-4);
+  padding: 0 24px;
+  height: 56px;
+}
+
+.headerCell {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.contentRow {
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 52px;
+}
+
+.contentRow:hover {
+  background-color: var(--color-bg-subtle-4);
+}
+
+.contentRow:last-child {
+  border-bottom: none;
+}
+
+.contentCell {
+  font-weight: 400;
+  color: #161719;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0; /* allow shrinking inside CSS grid for ellipsis */
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; /* allow inner text to shrink for ellipsis */
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emailCell {
+  color: var(--color-text-secondary);
+}
+
+.ageCell {
+  color: var(--color-text-primary);
+}
+
+.locationCell {
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .headerRow,
+  .contentRow {
+    height: auto;   
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+  }
+  
+  .headerCell,
+  .contentCell {
+    border-bottom: 1px solid #eaecf0;
+    padding: 8px 0;
+  }
+  
+  .headerCell:last-child,
+  .contentCell:last-child {
+    border-bottom: none;
+  }
+  
+  .nameCell {
+    order: 1;
+  }
+  
+  .emailCell {
+    order: 2;
+  }
+  
+  .ageCell {
+    order: 3;
+  }
+  
+  .locationCell {
+    order: 4;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    margin: 0 -16px;
+    border-radius: 0;
+  }
+  
+  .headerRow,
+  .contentRow {
+    padding: 12px 16px;
+  }
+}
