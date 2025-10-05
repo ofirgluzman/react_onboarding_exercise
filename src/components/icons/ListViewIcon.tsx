@@ -1,4 +1,5 @@
 import React from 'react';
+import ListViewSvg from './list-view.svg?react';
 
 interface ListViewIconProps {
   className?: string;
@@ -12,17 +13,11 @@ const ListViewIcon: React.FC<ListViewIconProps> = ({
   height = 24 
 }) => {
   return (
-    <svg 
+    <ListViewSvg 
       className={className} 
       width={width} 
-      height={height} 
-      viewBox="0 0 24 24" 
-      fill="none"
-    >
-      <rect x="3" y="6" width="18" height="2" fill="#161719"/>
-      <rect x="3" y="11" width="18" height="2" fill="#161719"/>
-      <rect x="3" y="16" width="18" height="2" fill="#161719"/>
-    </svg>
+      height={height}
+    />
   );
 };
 

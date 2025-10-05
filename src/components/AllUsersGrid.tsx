@@ -1,23 +1,24 @@
-import { useImperativeHandle, forwardRef, useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
 import type { User } from '../types';
-import './AllUsersGrid.css';
+import styles from './AllUsersGrid.module.css';
+import sharedStyles from '../styles/shared.module.css';
+import type { AllUsersSrollableContent } from './AllUsersScrollableContent';
 
 interface AllUsersGridProps {
   users: User[];
-  onDetailsClick?: (user: User) => void;
+  onDetailsClick: (userId: string) => void;
+  scrollRef: React.Ref<AllUsersSrollableContent>;
 }
 
-export interface AllUsersGridRef {
-  scrollToUser: (userId: string) => void;
-}
 
-const AllUsersGrid = forwardRef<AllUsersGridRef, AllUsersGridProps>(({ 
+const AllUsersGrid: React.FC<AllUsersGridProps> = ({ 
   users, 
-  onDetailsClick 
-}, ref) => {
+  onDetailsClick,
+  scrollRef
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(scrollRef, () => ({
     scrollToUser: (userId: string) => {
       const elementId = getUserElementId(userId);
       const userElement = containerRef.current?.querySelector(`#${elementId}`);
@@ -32,7 +33,7 @@ const AllUsersGrid = forwardRef<AllUsersGridRef, AllUsersGridProps>(({
   }));
 
   return (
-    <div ref={containerRef} className="all-users-grid">
+    <div ref={containerRef} className={styles.container}>
       {users.map((user) => (
         <UserGridCard 
           key={user.id} 
@@ -42,48 +43,48 @@ const AllUsersGrid = forwardRef<AllUsersGridRef, AllUsersGridProps>(({
       ))}
     </div>
   );
-});
+};
 
 interface UserGridCardProps {
   user: User;
-  onDetailsClick?: (user: User) => void;
+  onDetailsClick: (userId: string) => void;
 }
 
 const UserGridCard: React.FC<UserGridCardProps> = ({ user, onDetailsClick }) => {
   const handleDetailsClick = () => {
     if (onDetailsClick) {
-      onDetailsClick(user);
+      onDetailsClick(user.id);
     }
   };
 
   return (
-    <div id={getUserElementId(user.id)} className="user-grid-card">
-      <div className="user-grid-card__images">
-        <div className="user-grid-card__image-placeholder"></div>
-        <div className="user-grid-card__image-placeholder"></div>
-        <div className="user-grid-card__image-placeholder"></div>
-        <div className="user-grid-card__avatar-wrapper">
+    <div id={getUserElementId(user.id)} className={styles.card}>
+      <div className={styles.images}>
+        <div className={styles.imagePlaceholder}></div>
+        <div className={styles.imagePlaceholder}></div>
+        <div className={styles.imagePlaceholder}></div>
+        <div className={styles.avatarWrapper}>
           <img 
             src={user.image} 
             alt={`${user.firstName} ${user.lastName}`}
-            className="user-grid-card__avatar"
+            className={styles.avatar}
           />
         </div>
       </div>
-      <div className="user-grid-card__content">
-        <div className="user-grid-card__info">
-          <div className="user-grid-card__name">
+      <div className={styles.content}>
+        <div className={styles.info}>
+          <div className={styles.name}>
             {user.firstName} {user.lastName}
           </div>
-          <div className="user-grid-card__details">
+          <div className={styles.details}>
             {user.age} | {user.address.city} {user.address.stateCode}
           </div>
         </div>
-        <div className="user-grid-card__email">
+        <div className={`${styles.email} ${sharedStyles.mediumBodyText}`}>
           {user.email}
         </div>
         <button 
-          className="user-grid-card__button"
+          className={styles.button}
           onClick={handleDetailsClick}
         >
           Details
@@ -96,7 +97,5 @@ const UserGridCard: React.FC<UserGridCardProps> = ({ user, onDetailsClick }) => 
 function getUserElementId(userId: string): string {
   return `all-users-grid-user-${userId}`;
 }
-
-AllUsersGrid.displayName = 'AllUsersGrid';
 
 export default AllUsersGrid;

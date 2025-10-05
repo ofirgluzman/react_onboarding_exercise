@@ -1,7 +1,9 @@
 import React from 'react';
+import { clsx } from 'clsx';
 import { SearchIcon, GridViewIcon, ListViewIcon } from './icons';
 import type { ContentMode } from '../types';
-import './AllUsersHeader.css';
+import styles from './AllUsersHeader.module.css';
+import sharedStyles from '../styles/shared.module.css';
 
 interface AllUsersHeaderProps {
   searchTerm: string;
@@ -19,49 +21,51 @@ const AllUsersHeader: React.FC<AllUsersHeaderProps> = ({
   onContentModeChange
 }) => {
   return (
-    <div className="all-users-header">
-      <div className="all-users-header__search-container">
-        <h1 className="all-users-header__search-title">Search users</h1>
-        <div className="all-users-header__search-field">
+    <div className={styles.container}>
+      <div className={styles.searchContainer}>
+        <h1 className={sharedStyles.mediumTitle}>Search users</h1>
+        <div className={styles.searchField}>
           <SearchIcon />
           <input 
             type="text" 
             placeholder="Placeholder"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="all-users-header__search-field-input"
+            className={styles.searchInput}
           />
         </div>
       </div>
 
-      <div className="all-users-header__controls">
-        <div className="all-users-header__filters">
-          <span className="all-users-header__filter-label">Filter by:</span>
-          <div className="all-users-header__filter-chips">
-            <div className="all-users-header__chip">
+      <div className={styles.controls}>
+        <div className={styles.filters}>
+          <span className={styles.filterLabel}>Filter by:</span>
+          <div className={styles.chips}>
+            <div className={styles.chip}>
               <span>Cities</span>
             </div>
-            <div className="all-users-header__chip">
+            <div className={styles.chip}>
               <span>Age</span>
             </div>
           </div>
         </div>
         
-        <div className="all-users-header__display-control">
-          <span className="all-users-header__results-count">{resultsCount} results</span>
-          <div className="all-users-header__content-mode-toggle">
+        <div className={styles.displayControl}>
+          <span className={styles.resultsCount}>{resultsCount} results</span>
+          <div className={styles.toggle}>
             <button 
-              className={`all-users-header__content-mode-toggle-button ${
-                currentContentMode === 'grid' ? 'all-users-header__content-mode-toggle-button--active' : ''
-              }`}
+              className={clsx(
+                styles.toggleButton,
+                currentContentMode === 'grid' && styles.toggleButtonActive
+              )}
               onClick={() => onContentModeChange('grid')}
             >
               <GridViewIcon />
             </button>
             <button 
-              className={`all-users-header__content-mode-toggle-button ${
-                currentContentMode === 'list' ? 'all-users-header__content-mode-toggle-button--active' : ''
-              }`}
+              className={clsx(
+                styles.toggleButton,
+                currentContentMode === 'list' && styles.toggleButtonActive
+              )}
               onClick={() => onContentModeChange('list')}
             >
               <ListViewIcon />

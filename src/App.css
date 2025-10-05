@@ -20,11 +20,11 @@
 }
 
 .loading-state, .no-results {
-  color: #a3a6ac;
+  color: var(--color-text-muted);
 }
 
 .error-state {
-  color: #dc2626;
+  color: var(--color-error-strong);
 }
 
 @media (max-width: 768px) {

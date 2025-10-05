@@ -1,12 +1,12 @@
-.all-users-grid {
+.container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(336px, 1fr));
   gap: 24px;
   padding-bottom: 40px;
 }
 
-.user-grid-card {
-  background: white;
+.card {
+  background: var(--color-bg-surface);
   border-radius: 16px;
   box-shadow: 0px 4px 12px -2px rgba(24, 39, 75, 0.08), 
               0px 0px 4px 0px rgba(24, 39, 75, 0.02);
@@ -15,21 +15,21 @@
   flex-direction: column;
 }
 
-.user-grid-card__images {
+.images {
   position: relative;
   height: 200px;
   display: flex;
   width: 100%;
 }
 
-.user-grid-card__image-placeholder {
+.imagePlaceholder {
   flex: 1;
-  background-color: #e6e7e9;
+  background-color: var(--color-border);
   height: 100%;
   border-right: 1px solid white;
 }
 
-.user-grid-card__avatar-wrapper {
+.avatarWrapper {
   position: absolute;
   bottom: -40px;
   left: 50%;
@@ -43,14 +43,14 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.user-grid-card__avatar {
+.avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.user-grid-card__content {
+.content {
   padding: 56px 24px 32px;
   display: flex;
   flex-direction: column;
@@ -58,33 +58,37 @@
   gap: 24px;
 }
 
-.user-grid-card__info {
+.info {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 4px;
+  max-width: 100%;
 }
 
-.user-grid-card__name {
+.name {
   font-weight: 700;
   font-size: 18px;
   line-height: 24px;
   letter-spacing: -0.5px;
-  color: #161719;
+  color: var(--color-text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.user-grid-card__details {
+.details {
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
   letter-spacing: -0.25px;
-  color: #161719;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
-.user-grid-card__email {
+.email {
   font-weight: 400;
   font-size: 16px;
   line-height: 20px;
@@ -97,7 +101,7 @@
   max-width: 100%;
 }
 
-.user-grid-card__button {
+.button {
   background: rgba(44, 45, 48, 0.08);
   border: none;
   border-radius: 999px;
@@ -117,16 +121,16 @@
   color: #2c2d30;
 }
 
-.user-grid-card__button:hover {
+.button:hover {
   background: rgba(44, 45, 48, 0.12);
 }
 
-.user-grid-card__button:active {
+.button:active {
   background: rgba(44, 45, 48, 0.16);
 }
 
 @media (max-width: 768px) {
-  .all-users-grid {
+  .container {
     justify-content: center;
   }
 }

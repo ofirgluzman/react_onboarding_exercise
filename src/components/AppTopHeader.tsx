@@ -1,11 +1,10 @@
-import React from 'react';
-import './AppTopHeader.css';
+import styles from './AppTopHeader.module.css';
 
-const AppTopHeader: React.FC = () => {
+const AppTopHeader = () => {
   return (
-    <header className="app-top-header">
-      <span className="app-top-header__logo-text">Lightricks</span>
-      <div className="app-top-header__avatar">TJ</div>
+    <header className={styles.container}>
+      <span className={styles.logoText}>Lightricks</span>
+      <div className={styles.avatar}>TJ</div>
     </header>
   );
 };

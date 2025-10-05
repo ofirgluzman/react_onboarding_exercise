@@ -1,61 +1,43 @@
-import { useRef, useImperativeHandle, forwardRef } from 'react';
-import AllUsersGrid, { type AllUsersGridRef } from './AllUsersGrid';
-import AllUsersList, { type AllUsersListRef }  from './AllUsersList';
+import React from 'react';
+import AllUsersGrid from './AllUsersGrid';
+import AllUsersList  from './AllUsersList';
+import type { AllUsersSrollableContent } from './AllUsersScrollableContent';
 import type { User, ContentMode } from '../types';
+
 
 interface AllUsersContentProps {
   users: User[];
   currentContentMode: ContentMode;
-  onDetailsClick?: (user: User) => void;
+  onDetailsClick?: (userId: string) => void;
+  scrollRef: React.Ref<AllUsersSrollableContent>;
 }
 
-export interface AllUsersContentRef {
-  scrollToUser: (userId: string) => void;
-}
-
-const AllUsersContent = forwardRef<AllUsersContentRef, AllUsersContentProps>(({
+const AllUsersContent: React.FC<AllUsersContentProps> = ({ 
   users,
   currentContentMode,
-  onDetailsClick
-}, ref) => {
-  const gridRef = useRef<AllUsersGridRef>(null);
-  const listRef = useRef<AllUsersListRef>(null);
-
-  useImperativeHandle(ref, () => ({
-    scrollToUser: (userId: string) => {
-      switch (currentContentMode) {
-        case 'grid':
-          gridRef.current?.scrollToUser(userId);
-          break;
-        case 'list':
-          listRef.current?.scrollToUser(userId);
-          break;
-      }
-    }
-  }));
-
+  onDetailsClick,
+  scrollRef
+}) => {
   switch (currentContentMode) {
     case 'grid':
       return (
-        <AllUsersGrid 
-          ref={gridRef}
+        <AllUsersGrid
           users={users}
           onDetailsClick={onDetailsClick}
+          scrollRef={scrollRef}
         />
       );
     case 'list':
       return (
-        <AllUsersList 
-          ref={listRef}
+        <AllUsersList
           users={users}
           onDetailsClick={onDetailsClick}
+          scrollRef={scrollRef}
         />
       );
     default:
       return null;
   }
-});
-
-AllUsersContent.displayName = 'AllUsersContent';
+};
 
 export default AllUsersContent;

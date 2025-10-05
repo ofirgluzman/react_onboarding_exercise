@@ -1,26 +1,18 @@
-.all-users-header {
+.container {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.all-users-header__search-container {
+.searchContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.all-users-header__search-title {
-  font-weight: 700;
-  font-size: 24px;
-  line-height: 32px;
-  letter-spacing: -0.75px;
-  color: #161719;
-  margin: 0;
-}
 
-.all-users-header__search-field {
+.searchField {
   background: rgba(0, 0, 0, 0.04);
   border-radius: 20px;
   width: 400px;
@@ -31,7 +23,7 @@
   padding: 10px 12px;
 }
 
-.all-users-header__search-field-input {
+.searchInput {
   flex: 1;
   border: none;
   background: transparent;
@@ -40,82 +32,82 @@
   font-size: 14px;
   line-height: 18px;
   letter-spacing: -0.25px;
-  color: #161719;
+  color: var(--color-text-primary);
 }
 
-.all-users-header__search-field-input::placeholder {
-  color: #d0d1d3;
+.searchInput::placeholder {
+  color: var(--color-text-placeholder);
 }
 
-.all-users-header__controls {
+.controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.all-users-header__filters {
+.filters {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.all-users-header__filter-label {
+.filterLabel {
   font-weight: 500;
   font-size: 14px;
   line-height: 18px;
   letter-spacing: -0.5px;
-  color: #161719;
+  color: var(--color-text-primary);
 }
 
-.all-users-header__filter-chips {
+.chips {
   display: flex;
   gap: 8px;
 }
 
-.all-users-header__chip {
+.chip {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border: 1px solid #e6e7e9;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: white;
+  background: var(--color-bg-surface);
   font-weight: 500;
   font-size: 14px;
   line-height: 18px;
   letter-spacing: -0.5px;
-  color: #161719;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.all-users-header__chip:hover {
-  background-color: #f9f9f9;
+.chip:hover {
+  background-color: var(--color-bg-subtle-3);
 }
 
-.all-users-header__display-control {
+.displayControl {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.all-users-header__results-count {
+.resultsCount {
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
   letter-spacing: -0.25px;
-  color: #a3a6ac;
+  color: var(--color-text-muted);
 }
 
-.all-users-header__content-mode-toggle {
-  background: white;
+.toggle {
+  background: var(--color-bg-surface);
   border-radius: 999px;
   padding: 4px;
   display: flex;
   width: 58px;
 }
 
-.all-users-header__content-mode-toggle-button {
+.toggleButton {
   background: transparent;
   border: none;
   padding: 4px;
@@ -128,23 +120,23 @@
   height: 24px;
 }
 
-.all-users-header__content-mode-toggle-button--active {
-  background: #f3f4f6;
+.toggleButtonActive {
+  background: var(--color-bg-subtle-1);
 }
 
 @media (max-width: 768px) {
-  .all-users-header__search-container {
+  .searchContainer {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
   
-  .all-users-header__search-field {
+  .searchField {
     width: 100%;
     max-width: none;
   }
   
-  .all-users-header__controls {
+  .controls {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
@@ -152,11 +144,11 @@
 }
 
 @media (max-width: 480px) {
-  .all-users-header__filter-chips {
+  .chips {
     flex-wrap: wrap;
   }
   
-  .all-users-header__display-control {
+  .displayControl {
     width: 100%;
     justify-content: space-between;
   }

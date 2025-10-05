@@ -1,5 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import type { User } from '../types';
+import { useMemo } from 'react';
+import { userSchema, usersArraySchema } from '../types/userSchema';
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object
@@ -21,24 +23,19 @@ const USER_QUERY_KEY = 'users';
 // Use Users
 // ==================================
 export const useUsers = (): FetchResult<User[]> => {
-  return getFetchResult(useQuery({
+  return useFetchResult({
     queryKey: ['users'],
     queryFn: fetchUsers,
-  }));
+  });
 };
 
-function getFetchResult<T>(
-  queryResult: { data: T | undefined, isLoading: boolean, error: Error | null }
-): FetchResult<T> {
-  const result = queryResult;
-
-  if (result.error) {
-    return { type: `error`, error: result.error };
-  }
-  if (result.isLoading || !result.data) {
-    return { type: `loading` };
-  }
-  return { type: `success`, data: result.data };
+function useFetchResult<T>(opts: Parameters<typeof useQuery<T>>[0]): FetchResult<T> {
+  const q = useQuery<T>(opts);
+  return useMemo<FetchResult<T>>(() => {
+    if (q.error) return { type: 'error', error: q.error as Error };
+    if (q.isLoading || q.data === undefined) return { type: 'loading' };
+    return { type: 'success', data: q.data };
+  }, [q.error, q.isLoading, q.data]);
 }
 
 const fetchUsers = async (): Promise<User[]> => {
@@ -50,7 +47,14 @@ const fetchUsers = async (): Promise<User[]> => {
   if (!json) {
     throw new Error('Failed to extract users from response');
   }
-  return json;
+  
+  const parseResult = usersArraySchema.safeParse(json);
+  if (!parseResult.success) {
+    console.error('Users validation failed:', parseResult.error);
+    throw new Error(`Invalid users data: ${parseResult.error.message}`);
+  }
+  
+  return parseResult.data;
 };
 
 // ==================================
@@ -58,7 +62,7 @@ const fetchUsers = async (): Promise<User[]> => {
 // ==================================
 export const useUser = (id: string): FetchResult<User> => {
   const client = useQueryClient();
-  return getFetchResult(useQuery({
+  return useFetchResult({
     queryKey: ['user', id],
     queryFn: () => fetchUser(id),
     enabled: Boolean(id),
@@ -66,7 +70,7 @@ export const useUser = (id: string): FetchResult<User> => {
       const cachedUsers = client.getQueryData<User[]>(['users']);
       return cachedUsers?.find((user: User) => user.id === id);
     },
-  }));
+  });
 };
 
 const fetchUser = async (id: string): Promise<User> => {
@@ -78,7 +82,13 @@ const fetchUser = async (id: string): Promise<User> => {
   if (!json) {
     throw new Error(`Failed to extract user ${id} from response`);
   }
-  return json;
+  
+  const parseResult = userSchema.safeParse(json);
+  if (!parseResult.success) {
+    throw new Error(`Invalid user data for ${id}: ${parseResult.error.message}`);
+  }
+  
+  return parseResult.data;
 };
 
 // ==================================
@@ -122,5 +132,10 @@ const updateUser = async (userId: string, patch: UserPatch): Promise<User> => {
     throw new Error(`Failed to extract updated user ${userId} from response`);
   }
 
-  return updatedUser;
+  const parseResult = userSchema.safeParse(updatedUser);
+  if (!parseResult.success) {
+    throw new Error(`Invalid updated user data for ${userId}: ${parseResult.error.message}`);
+  }
+
+  return parseResult.data;
 };

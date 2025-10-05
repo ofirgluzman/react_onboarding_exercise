@@ -1,35 +1,33 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './UserDetails.css';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import styles from './UserDetails.module.css';
+import sharedStyles from '../styles/shared.module.css';
 import { getAboutDescription } from '../utils';
 import { useUser } from '../hooks/useUsers';
 
-const UserDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const userResult = useUser(id || '');
+const UserDetails = () => {
+  const { id: userId } = useParams<{ id: string }>();
 
-  useEffect(() => {
-    if (!id) {
-      navigate('/');
-      return;
-    }
-  }, [id, navigate]);
-
-  if (!id) {
-    return null;
+  if (!userId) {
+    return <Navigate to="/" replace />;
   }
+
+  return <UserDetailsContent userId={userId} />;
+};
+
+const UserDetailsContent = ({ userId }: { userId: string }) => {
+  const userResult = useUser(userId);
+  const navigate = useNavigate();
 
   if (userResult.type === 'loading') {
     return (
-      <div className="user-details">
+      <div className={styles.container}>
         <div className="loading-state">Loading user details...</div>
       </div>
     );
   }
   if (userResult.type === 'error') {
     return (
-      <div className="user-details">
+      <div className={styles.container}>
         <div className="error-state">Error loading user details</div>
       </div>
     );
@@ -37,58 +35,59 @@ const UserDetails: React.FC = () => {
 
   const handleBackClick = () => {
     navigate('/', {
-      state: { fromUserId: id }
+      state: { fromUserId: userId }
     });
   };
 
   const handleEditClick = () => {
-    navigate(`/user/${id}/edit`);
+    navigate(`/user/${userId}/edit`);
   };
 
   const user = userResult.data;
 
   return (
-    <div className="user-details">
-      <div className="user-details__header">
+    <div className={styles.container}>
+      <div className={styles.header}>
         <button 
-          className="user-details__back-button"
+          className={sharedStyles.secondaryButton}
           onClick={handleBackClick}
         >
           ← Back
         </button>
         <button 
-          className="user-details__edit-button"
+          className={sharedStyles.primaryButton}
           onClick={handleEditClick}
         >
           Edit
         </button>
       </div>
 
-      <div className="user-details__content">
-        <div className="user-details__profile">
-          <div className="user-details__avatar">
+      <div className={styles.content}>
+        <div className={styles.profile}>
+          <div className={styles.avatar}>
             <img 
               src={user.image} 
               alt={`${user.firstName} ${user.lastName}`}
-              className="user-details__avatar-image"
+              className={styles.avatarImage}
             />
           </div>
-          <div className="user-details__basic-info">
-            <h1 className="user-details__name">
+          <div className={styles.basicInfo}>
+            <h1 className={sharedStyles.largeTitle}>
               {user.firstName} {user.lastName}
             </h1>
-            <div className="user-details__age-and-location">
-              <span className="user-details__age">{user.age} years old</span>
-              <span className="user-details__location">
+            <div className={styles.ageAndLocation}>
+              <span className={styles.age}>{user.age} years old</span>
+              <span className={styles.separator} aria-hidden="true">•</span>
+              <span className={styles.location}>
                 {user.address.city}, {user.address.state}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="user-details__about">
-          <h2 className="user-details__about-title">About</h2>
-          <p className="user-details__about-text">
+        <div className={styles.about}>
+          <h2 className={sharedStyles.smallTitle}>About</h2>
+          <p className={styles.aboutText}>
             {getAboutDescription(user)}
           </p>
         </div>

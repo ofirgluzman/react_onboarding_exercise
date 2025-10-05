@@ -10,8 +10,8 @@ export interface User {
   gender?: string;
   birthDate?: string;
   bloodGroup?: string;
-  height?: string;
-  weight?: string;
+  height?: number;
+  weight?: number;
   eyeColor?: string;
   address: {
     city: string;

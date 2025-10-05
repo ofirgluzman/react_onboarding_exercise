@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.tsx'
@@ -23,8 +23,12 @@ const router = createBrowserRouter([
         element: <UserDetails />,
       },
       {
+        path: 'user/',
+        element: <Navigate to="/" replace />,
+      },
+      {
         path: 'user/:id/edit',
-        element: <UserEditForm instanceId="user edit form" />,
+        element: <UserEditForm />,
       },
     ],
   },

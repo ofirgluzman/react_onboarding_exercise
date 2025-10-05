@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import AllUsersContent from './AllUsersContent';
 import AllUsersHeader from './AllUsersHeader';
-import AllUsersContent, { type AllUsersContentRef } from './AllUsersContent';
+import type { AllUsersSrollableContent } from './AllUsersScrollableContent';
 import { filterUsersByName } from '../utils';
 import { useUsers } from '../hooks';
-import type { User, ContentMode } from '../types';
+import type { ContentMode } from '../types';
 
 const AllUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +14,7 @@ const AllUsers: React.FC = () => {
   const location = useLocation();
   const usersResult  = useUsers();
   const isLoading = usersResult.type === 'loading';
-  const usersContentRef = useRef<AllUsersContentRef>(null);
+  const scrollableContentRef = useRef<AllUsersSrollableContent>(null);
   
   const filteredUsers = useMemo(() => {
     if (usersResult.type !== 'success') {
@@ -31,13 +32,13 @@ const AllUsers: React.FC = () => {
     
     requestAnimationFrame(() => {
       setTimeout(() => { 
-        usersContentRef.current?.scrollToUser(state.fromUserId!);
-      }, 200);
+        scrollableContentRef.current?.scrollToUser(state.fromUserId!);
+      }, 200); // Delay the srolling to avoid instant overwhelming scrolling.
     });
   }, [location.state, isLoading]);
 
-  const handleDetailsClick = (user: User) => {
-    navigate(`/user/${user.id}`);
+  const handleDetailsClick = (userId: string) => {
+    navigate(`/user/${userId}`);
   };
 
   return (
@@ -49,21 +50,26 @@ const AllUsers: React.FC = () => {
         currentContentMode={currentContentMode}
         onContentModeChange={setCurrentContentMode}
       />
-      
-      {isLoading ? (
-        <div className="loading-state">Loading users...</div>
-        ) : filteredUsers.length > 0 ? (
-          <AllUsersContent 
-            ref={usersContentRef}
-            users={filteredUsers}
-            currentContentMode={currentContentMode}
-            onDetailsClick={handleDetailsClick}
-          />
-        ) : (
-        <div className="no-results">
-          {searchTerm ? `No users found matching "${searchTerm}"` : 'No users found'}
-        </div>
-      )}
+      {(() => {
+        if (isLoading) {
+          return <div className="loading-state">Loading users...</div>;
+        }
+
+        if (filteredUsers.length === 0) {
+          return  (
+            <div className="no-results">
+              {searchTerm ? `No users found matching "${searchTerm}"` : 'No users found'}
+            </div>
+          );
+        }
+
+        return <AllUsersContent 
+          users={filteredUsers}
+          currentContentMode={currentContentMode}
+          onDetailsClick={handleDetailsClick}
+          scrollRef={scrollableContentRef}
+        />;
+      })()}
     </>
   );
 };

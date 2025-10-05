@@ -1,23 +1,23 @@
-import { useImperativeHandle, forwardRef, useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
 import type { User } from '../types';
-import './AllUsersList.css';
+import styles from './AllUsersList.module.css';
+import sharedStyles from '../styles/shared.module.css';
+import type { AllUsersSrollableContent } from './AllUsersScrollableContent';
 
 interface AllUsersListProps {
   users: User[];
-  onDetailsClick?: (user: User) => void;
+  onDetailsClick: (userId: string) => void;
+  scrollRef: React.Ref<AllUsersSrollableContent>;
 }
 
-export interface AllUsersListRef {
-  scrollToUser: (userId: string) => void;
-}
-
-const AllUsersList = forwardRef<AllUsersListRef, AllUsersListProps>(({ 
+const AllUsersList: React.FC<AllUsersListProps> = ({ 
   users, 
-  onDetailsClick 
-}, ref) => {
+  onDetailsClick,
+  scrollRef
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(scrollRef, () => ({
     scrollToUser: (userId: string) => {
       const elementId = getUserElementId(userId);
       const userElement = containerRef.current?.querySelector(`#${elementId}`);
@@ -31,41 +31,41 @@ const AllUsersList = forwardRef<AllUsersListRef, AllUsersListProps>(({
   }));
 
   return (
-    <div ref={containerRef} className="all-users-list">
-      <div className="all-users-list__table">
-        <div className="all-users-list__base-row all-users-list__header-row">
-          <div className="all-users-list__base-cell all-users-list__header-cell all-users-list__header-cell--name">Name</div>
-          <div className="all-users-list__base-cell all-users-list__header-cell all-users-list__header-cell--email">Email</div>
-          <div className="all-users-list__base-cell all-users-list__header-cell all-users-list__header-cell--age">Age</div>
-          <div className="all-users-list__base-cell all-users-list__header-cell all-users-list__header-cell--location">Location</div>
+    <div ref={containerRef} className={styles.container}>
+      <div className={styles.table}>
+        <div className={`${styles.row} ${styles.headerRow}`}>
+          <div className={`${styles.cell} ${styles.headerCell} ${styles.nameCell}`}>Name</div>
+          <div className={`${styles.cell} ${styles.headerCell} ${styles.emailCell}`}>Email</div>
+          <div className={`${styles.cell} ${styles.headerCell} ${styles.ageCell}`}>Age</div>
+          <div className={`${styles.cell} ${styles.headerCell} ${styles.locationCell}`}>Location</div>
         </div>
         
         {users.map((user) => (
           <div 
             key={user.id}
             id={getUserElementId(user.id)}
-            className="all-users-list__base-row all-users-list__content-row"
-            onClick={() => onDetailsClick?.(user)}
+            className={`${styles.row} ${styles.contentRow}`}
+            onClick={() => onDetailsClick(user.id)}
           >
-            <div className="all-users-list__base-cell all-users-list__content-cell all-users-list__content-cell--name">
-              <div className="all-users-list__avatar">
+            <div className={`${styles.cell} ${styles.contentCell} ${styles.nameCell}`}>
+              <div className={styles.avatar}>
                 <img 
                   src={user.image} 
                   alt={`${user.firstName} ${user.lastName}`}
-                  className="all-users-list__avatar-image"
+                  className={styles.avatarImage}
                 />
               </div>
-              <span className="all-users-list__name">
+              <span className={`${styles.name} ${sharedStyles.smallBodyText}`}>
                 {user.firstName} {user.lastName}
               </span>
             </div>
-            <div className="all-users-list__base-cell all-users-list__content-cell all-users-list__content-cell--email">
+            <div className={`${styles.cell} ${styles.contentCell} ${styles.emailCell} ${sharedStyles.mediumBodyText}`}>
               {user.email}
             </div>
-            <div className="all-users-list__base-cell all-users-list__content-cell all-users-list__content-cell--age">
+            <div className={`${styles.cell} ${styles.contentCell} ${styles.ageCell} ${sharedStyles.smallBodyText}`}>
               {user.age}
             </div>
-            <div className="all-users-list__base-cell all-users-list__content-cell all-users-list__content-cell--location">
+            <div className={`${styles.cell} ${styles.contentCell} ${styles.locationCell} ${sharedStyles.smallBodyText}`}>
               {user.address.city}, {user.address.stateCode}
             </div>
           </div>
@@ -73,12 +73,10 @@ const AllUsersList = forwardRef<AllUsersListRef, AllUsersListProps>(({
       </div>
     </div>
   );
-});
+};
 
 function getUserElementId(userId: string): string {
   return `all-users-list-user-${userId}`;
 }
-
-AllUsersList.displayName = 'AllUsersList';
 
 export default AllUsersList;

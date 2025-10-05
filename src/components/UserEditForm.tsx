@@ -1,282 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { clsx } from 'clsx';
 import { isEqual } from 'lodash';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import useDeepCompareEffect from 'use-deep-compare-effect';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useUser, useUpdateUser, type UserPatch } from '../hooks/useUsers';
-import type { User } from '../types';
-import './UserEditForm.css';
-
-interface FieldsInfo {
-  firstName: string;
-  lastName: string;
-  age: string;
-  email: string;
-  gender: string;
-  city: string;
-  state: string;
-  country: string;
-  image: string;
-  birthDate: string;
-  bloodGroup: string;
-  height: string;
-  weight: string;
-  eyeColor: string;
-}
-
-type FieldIdentifier = keyof FieldsInfo;
-type ErrorMessage = string;
-
-type UIInputFieldDescriptor = 
-  { type: 'text', placeholder: string } |
-  { type: 'number', min: number, max: number, step?: number } |
-  { type: 'email', placeholder: string } |
-  { type: 'date' };
-type UIFieldDescriptor = 
-  { type: 'input', descriptor: UIInputFieldDescriptor } |
-  { type: 'image', urlPlaceholder: string };
-  
-interface FieldDescriptor<T extends FieldIdentifier> {
-  name: T;
-  getFromUser: (user: User) => FieldsInfo[T];
-  setOnUserPatch: (user: UserPatch, value: FieldsInfo[T]) => void;
-  defaultValue: FieldsInfo[T];
-  validate: (value: FieldsInfo[T]) => ErrorMessage | null;
-  required: boolean;
-  label: string;
-  uiFieldDescriptor: UIFieldDescriptor;
-}
-
-type FieldsDescriptors = {
-  [K in FieldIdentifier]: FieldDescriptor<K>;
-};
-
-const fieldDescriptors: FieldsDescriptors = {
-  firstName: {
-    name: 'firstName',
-    getFromUser: (user) => user.firstName,
-    setOnUserPatch: (user, value) => { user.firstName = value; },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'First name is required';
-      if (value.length > 80) return 'First name must be less than 80 characters';
-      return null;
-    },
-    label: 'First Name',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Olivia' } },
-  },
-  lastName: {
-    name: 'lastName',
-    getFromUser: (user) => user.lastName,
-    setOnUserPatch: (user, value) => { user.lastName = value; },
-    defaultValue: '',
-    required: false,
-    validate: (value) => {
-      if (value.length > 80) return 'Last name must be less than 80 characters';
-      return null;
-    },
-    label: 'Last Name',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Johnson' } },
-  },
-  age: {
-    name: 'age',
-    getFromUser: (user) => user.age.toString(),
-    setOnUserPatch: (user, value) => { user.age = parseInt(value, 10); },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'Age is required';
-      const ageNum = parseInt(value);
-      if (isNaN(ageNum) || ageNum < 0 || ageNum > 120) return 'Age must be between 0 and 120';
-      return null;
-    },
-    label: 'Age',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'number', min: 0, max: 120 } },
-  },
-  email: {
-    name: 'email',
-    getFromUser: (user) => user.email,
-    setOnUserPatch: (user, value) => { user.email = value; },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'Email is required';
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) return 'Please enter a valid email';
-      return null;
-    },
-    label: 'Email',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'email', placeholder: 'olivia@example.com' } },
-  },
-  gender: {
-    name: 'gender',
-    getFromUser: (user) => user.gender || '',
-    setOnUserPatch: (user, value) => { user.gender = value; },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'Gender is required';
-      if (value.length > 80) return 'Gender must be less than 80 characters';
-      return null;
-    },
-    label: 'Gender',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Female' } },
-  },
-  city: {
-    name: 'city',
-    getFromUser: (user) => user.address.city,
-    setOnUserPatch: (user, value) => { 
-      if (!user.address) {
-        user.address = {}
-      }
-      user.address.city = value; 
-    },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'City is required';
-      if (value.length > 80) return 'City must be less than 80 characters';
-      return null;
-    },
-    label: 'City',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Fort Worth' } },
-  },
-  state: {
-    name: 'state',
-    getFromUser: (user) => user.address.state,
-    setOnUserPatch: (user, value) => {
-      if (!user.address) {
-        user.address = {}
-      }
-      user.address.state = value;
-    },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'State is required';
-      if (value.length > 80) return 'State must be less than 80 characters';
-      return null;
-    },
-    label: 'State',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Texas' } },
-  },
-  country: {
-    name: 'country',
-    getFromUser: (user) => user.address.country || '',
-    setOnUserPatch: (user, value) => {
-      if (!user.address) {
-        user.address = {}
-      }
-      user.address.country = value;
-    },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'Country is required';
-      if (value.length > 80) return 'Country must be less than 80 characters';
-      return null;
-    },
-    label: 'Country',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'United States' } },
-  },
-  image: {
-    name: 'image',
-    getFromUser: (user) => user.image,
-    setOnUserPatch: (user, value) => { user.image = value; },
-    defaultValue: '',
-    required: true,
-    validate: (value) => {
-      if (!value.trim()) return 'Profile image URL is required';
-      try {
-        new URL(value);
-        if (!value.startsWith('http://') && !value.startsWith('https://')) {
-          return 'Profile image must be a valid URL (http/https)';
-        }
-      } catch {
-        return 'Profile image must be a valid URL';
-      }
-      return null;
-    },
-    label: 'Profile Image URL',
-    uiFieldDescriptor: { type: 'image', urlPlaceholder: 'https://example.com/image.jpg' },
-  },
-  birthDate: {
-    name: 'birthDate',
-    getFromUser: (user) => user.birthDate || '',
-    setOnUserPatch: (user, value) => { user.birthDate = value; },
-    defaultValue: '',
-    required: false,
-    validate: () => null,
-    label: 'Birth Date',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'date' } },
-  },
-  bloodGroup: {
-    name: 'bloodGroup',
-    getFromUser: (user) => user.bloodGroup || '',
-    setOnUserPatch: (user, value) => { user.bloodGroup = value; },
-    defaultValue: '',
-    required: false,
-    validate: () => null,
-    label: 'Blood Group',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'O+' } },
-  },
-  height: {
-    name: 'height',
-    getFromUser: (user) => user.height || '',
-    setOnUserPatch: (user, value) => { user.height = value; },
-    defaultValue: '',
-    required: false,
-    validate: () => null,
-    label: 'Height (cm)',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'number', min: 0, max: 300, step: 0.1 } },
-  },
-  weight: {
-    name: 'weight',
-    getFromUser: (user) => user.weight || '',
-    setOnUserPatch: (user, value) => { user.weight = value; },
-    defaultValue: '',
-    required: false,
-    validate: () => null,
-    label: 'Weight (kg)',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'number', min: 0, max: 500 } },
-  },
-  eyeColor: {
-    name: 'eyeColor',
-    getFromUser: (user) => user.eyeColor || '',
-    setOnUserPatch: (user, value) => { user.eyeColor = value; },
-    defaultValue: '',
-    required: false,
-    validate: () => null,
-    label: 'Eye Color',
-    uiFieldDescriptor: { type: 'input', descriptor: { type: 'text', placeholder: 'Brown' } },
-  },
-};
-
-const fieldIdentifiers = Object.keys(fieldDescriptors) as Array<FieldIdentifier>;
-
-const getDefaultFieldsInfo = (): FieldsInfo => {
-  return fieldIdentifiers.reduce((acc, key) => {
-    acc[key] = fieldDescriptors[key].defaultValue;
-    return acc;
-  }, {} as FieldsInfo);
-};
-
-const getFieldsInfoFromUser = (user: User): FieldsInfo => {
-  return fieldIdentifiers.reduce((acc, key) => {
-    acc[key] = fieldDescriptors[key].getFromUser(user);
-    return acc;
-  }, {} as FieldsInfo);
-};
-
-const getUserPatchFromFieldsInfo = (fieldsInfo: FieldsInfo): UserPatch => {
-  return fieldIdentifiers.reduce((acc, key) => {
-    fieldDescriptors[key].setOnUserPatch(acc, fieldsInfo[key]);
-    return acc;
-  }, {} as UserPatch);
-};
-
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useUser, useUpdateUser } from '../hooks/useUsers';
+import styles from './UserEditForm.module.css';
+import sharedStyles from '../styles/shared.module.css';
+import {
+  type FieldsDescriptors,
+  type FieldIdentifier,
+  fieldDescriptors,
+  fieldIdentifiers,
+} from './UserEditFormFieldsDescriptors';
+import { useStore } from 'zustand';
+import { useShallow } from 'zustand/shallow';
+import { store } from './UserEditFormStore';
 
 const uiFieldIdentifiers = {
   main: ['firstName', 'lastName', 'age', 'email', 'gender', 'city', 'state', 'country', 'image'] as const,
@@ -302,105 +40,36 @@ const uiFieldIdentifiers = {
   void _checkedExtraFields; // Silence unused variable error.
 })();
 
-interface ComponentState {
-  userId: string;
-  fieldsInfo: FieldsInfo;
-  shouldShowMoreDetails: boolean;
-  hasPreviousEditingHistory: boolean;
+const UserEditForm: React.FC = () => {
+  const { id: userId } = useParams<{ id: string }>();
 
-  // Actions
-  onUserLoaded: (user: User) => void;
-  onFieldNameChanged: (fieldName: keyof FieldsInfo, value: string) => void;
-  onShowMoreDetailsButtonPressed: () => void;
+  if (!userId) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <UserEditFormContent userId={userId} />
 }
 
-function makeComponentStore(
-  userId: string, initialFieldsInfo: FieldsInfo, storageInstanceId: string
-) {
-  return create<ComponentState>()(
-    persist(
-      (set) => ({
-        userId: userId,
-        fieldsInfo: initialFieldsInfo,
-        shouldShowMoreDetails: false,
-        hasPreviousEditingHistory: false,
-
-        onUserLoaded: (user: User) => {
-          set((state) => { 
-            // Don't override editing history when original user data is loaded.
-            if (state.hasPreviousEditingHistory) {
-              return state;
-            }
-            
-            return {
-              fieldsInfo: getFieldsInfoFromUser(user)
-            };
-          });
-        },
-        onFieldNameChanged: (fieldName: keyof FieldsInfo, value: string) => {
-          set((state) => ({
-            fieldsInfo: {
-              ...state.fieldsInfo,
-              [fieldName]: value,
-            },
-          }));
-        },
-
-        onShowMoreDetailsButtonPressed: () => {
-          set((state) => ({ shouldShowMoreDetails: !state.shouldShowMoreDetails }));
-        }
-      }),
-      {
-        name: `user-edit-form-${storageInstanceId}`,
-        partialize: (state) => ({
-          userId: state.userId,
-          fieldsInfo: state.fieldsInfo,
-          shouldShowMoreDetails: state.shouldShowMoreDetails,
-        }),
-        merge: (persistedState, currentState) => {
-          if (!persistedState) {
-            return currentState;
-          }
-          const persisted = persistedState as Partial<ComponentState>;
-          if (persisted.userId !== currentState.userId) {
-            return currentState;
-          }
-          return {
-            ...currentState,
-            hasPreviousEditingHistory: true,
-            fieldsInfo: persisted.fieldsInfo || currentState.fieldsInfo,
-            shouldShowMoreDetails: persisted.shouldShowMoreDetails || currentState.shouldShowMoreDetails,
-          };
-        }
-      }
-    )
-  );
-}
-
-type UserEditFormProps = {
-  instanceId: string;
-}
-
-const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
-  const { id } = useParams<{ id: string }>();
+const UserEditFormContent: React.FC<{ userId: string }> = ({ userId }) => {
   const navigate = useNavigate();
-  const userResult = useUser(id || '');
-  const updateUserMutation = useUpdateUser(id || '');
+  const userResult = useUser(userId);
+  const updateUserMutation = useUpdateUser(userId);
   
-  const initialFieldsInfo = userResult.type === 'success' 
-    ? getFieldsInfoFromUser(userResult.data)
-    : getDefaultFieldsInfo();
-  const storeRef = useRef<ReturnType<typeof makeComponentStore> | undefined>(undefined);
-  if (!storeRef.current) storeRef.current = makeComponentStore(
-    id || '', initialFieldsInfo, instanceId
-  );
-  const useStore = storeRef.current!;
-
-  const fieldsInfo = useStore(state => state.fieldsInfo);
-  const shouldShowMoreDetails = useStore(state => state.shouldShowMoreDetails);
-  const onUserLoaded = useStore(state => state.onUserLoaded);
-  const onFieldNameChanged = useStore(state => state.onFieldNameChanged);
-  const onShowMoreDetailsButtonPressed = useStore(state => state.onShowMoreDetailsButtonPressed);
+  const { 
+    fieldsInfo, 
+    shouldShowMoreDetails, 
+    onUserLoaded, 
+    onFieldNameChanged, 
+    onShowMoreDetailsButtonPressed 
+  } = useStore(store, useShallow((state) => {
+    return {
+      fieldsInfo: state.fieldsInfo,
+      shouldShowMoreDetails: state.shouldShowMoreDetails,
+      onUserLoaded: state.onUserLoaded,
+      onFieldNameChanged: state.onFieldNameChanged,
+      onShowMoreDetailsButtonPressed: state.onShowMoreDetailsButtonPressed,
+    };
+  }));
 
   useDeepCompareEffect(() => {
     if (userResult.type === 'success') {
@@ -409,13 +78,13 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
     }
   }, [userResult, onUserLoaded]);
 
-  if (!id) {
+  if (!userId) {
     return null;
   }
   
   if (userResult.type === 'loading') {
     return (
-      <div className="user-edit-form">
+      <div className={styles.container}>
         <div className="loading-state">Loading user details...</div>
       </div>
     );
@@ -423,7 +92,7 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
   
   if (userResult.type === 'error') {
     return (
-      <div className="user-edit-form">
+      <div className={styles.container}>
         <div className="error-state">Error loading user details</div>
       </div>
     );
@@ -440,7 +109,7 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
   );
   const isSaving = updateUserMutation.isPending;
   const hasPendingChanges = 
-    !isEqual(fieldsInfo, getFieldsInfoFromUser(userResult.data));
+    !isEqual(fieldsInfo, fieldDescriptors.getFieldsInfoFromUser(userResult.data));
 
   const isValidForSubmission = 
     hasAllRequiredFields && 
@@ -459,14 +128,13 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
     }
 
     updateUserMutation.mutate(
-      getUserPatchFromFieldsInfo(fieldsInfo),
+      fieldDescriptors.getUserPatchFromFieldsInfo(fieldsInfo),
       {
         onSuccess: () => {
-          navigate(`/user/${id}`);
+          navigate(`/user/${userId}`);
         },
         onError: (error) => {
           alert('Failed to update user: ' + error.message);
-          navigate(`/user/${id}`);
         }
       }
     );
@@ -481,7 +149,7 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
         return;
       }
     }
-    navigate(`/user/${id}`);
+    navigate(`/user/${userId}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -490,19 +158,19 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    onFieldNameChanged(name as keyof FieldsInfo, value);
+    onFieldNameChanged(name as FieldIdentifier, value);
   };
 
   return (
-    <div className="user-edit-form" onKeyDown={handleKeyDown}>
-      <div className="user-edit-form__header">
-        <h1 className="user-edit-form__title">User Form</h1>
-        <div className="user-edit-form__actions">
+    <div className={styles.container} onKeyDown={handleKeyDown}>
+      <div className={styles.header}>
+        <h1 className={sharedStyles.mediumTitle}>User Form</h1>
+        <div className={styles.actions}>
           <button
             type="button"
-            className="user-edit-form__cancel-button"
+            className={sharedStyles.secondaryButton}
             onClick={handleCancel}
           >
             Cancel
@@ -510,7 +178,7 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
           <button
             type="submit"
             form="user-form"
-            className="user-edit-form__save-button"
+            className={sharedStyles.primaryButton}
             disabled={!isValidForSubmission}
           >
             {isSaving ? 'Saving...' : 'Save'}
@@ -518,8 +186,8 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
         </div>
       </div>
 
-      <form id="user-form" className="user-edit-form__form" onSubmit={handleSubmit}>
-        <div className="user-edit-form__fields">
+      <form id="user-form" className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.fields}>
           {uiFieldIdentifiers.main.map(identifier => (
             <FormField
               key={identifier}
@@ -532,15 +200,15 @@ const UserEditForm: React.FC<UserEditFormProps> = ({instanceId}) => {
 
         <button
           type="button"
-          className="user-edit-form__add-more-details-button"
+          className={styles.addMoreButton}
           onClick={onShowMoreDetailsButtonPressed}
         >
           {shouldShowMoreDetails ? 'Hide Additional Details' : 'Add More Details'}
         </button>
         {shouldShowMoreDetails && (
-          <div className="user-edit-form__additional-fields">
-            <h3 className="user-edit-form__additional-fields-title">Additional Details</h3>
-            <div className="user-edit-form__fields">
+          <div className={styles.additionalFields}>
+            <h3 className={styles.additionalFieldsTitle}>Additional Details</h3>
+            <div className={styles.fields}>
               {uiFieldIdentifiers.additional.map(identifier => (
                 <FormField
                   key={identifier}
@@ -562,7 +230,7 @@ type AnyFieldDescriptor = FieldsDescriptors[FieldIdentifier];
 interface FormFieldProps {
   descriptor: AnyFieldDescriptor;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -585,6 +253,21 @@ const FormField: React.FC<FormFieldProps> = ({
           errorMessage={errorMessage || undefined}
         />
       );
+    case 'select': {
+      const selectDescriptor = descriptor.uiFieldDescriptor;
+      return (
+        <SelectField
+          name={descriptor.name}
+          label={descriptor.label}
+          value={value}
+          onChange={onChange}
+          options={selectDescriptor.options}
+          placeholder={selectDescriptor.placeholder}
+          required={descriptor.required}
+          errorMessage={errorMessage || undefined}
+        />
+      );
+    }
     case 'input': {
       const inputDescriptor = descriptor.uiFieldDescriptor.descriptor;
       const inputType = inputDescriptor.type;
@@ -646,7 +329,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
   };
 
   return (
-    <div className="user-edit-form__image-field">
+    <div className={styles.imageField}>
       <InputField
         name={name}
         label={label}
@@ -659,16 +342,16 @@ const ImageField: React.FC<ImageFieldProps> = ({
       />
 
       {url && !errorMessage && (
-        <div className="user-edit-form__image-preview">
+        <div className={styles.imagePreview}>
           {imagePreviewError ? (
-            <div className="user-edit-form__image-preview-error">
+            <div className={styles.imagePreviewError}>
               Unable to load image from the provided URL
             </div>
           ) : (
             <img
               src={url}
               alt="Profile preview"
-              className="user-edit-form__image-preview-img"
+              className={styles.imagePreviewImg}
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
@@ -706,16 +389,11 @@ const InputField: React.FC<InputFieldProps> = ({
   step,
   errorMessage
 }) => {
-  const inputClassNames = [
-    'user-edit-form__input-field-input',
-    errorMessage ? 'user-edit-form__input-field-input--error' : ''
-  ].filter(Boolean).join(' ');
-
   return (
-    <div className="user-edit-form__input-field">
-      <label htmlFor={name} className="user-edit-form__input-field-label">
+    <div className={styles.inputField}>
+      <label htmlFor={name} className={styles.inputLabel}>
         {label}
-        {required && <span className="user-edit-form__required"> *</span>}
+        {required && <span className={styles.required}> *</span>}
       </label>
       <input
         type={inputType}
@@ -723,7 +401,10 @@ const InputField: React.FC<InputFieldProps> = ({
         name={name}
         value={value}
         onChange={onChange}
-        className={inputClassNames}
+        className={clsx(
+          styles.input,
+          errorMessage && styles.inputError
+        )}
         placeholder={placeholder}
         required={required}
         min={min}
@@ -732,8 +413,66 @@ const InputField: React.FC<InputFieldProps> = ({
         aria-describedby={errorMessage ? `${name}-error` : undefined}
       />
       {errorMessage && (
-        <span id={`${name}-error`} className="user-edit-form__input-error-label" 
-        role="alert">
+        <span id={`${name}-error`} className={styles.inputErrorLabel} role="alert">
+          {errorMessage}
+        </span>
+      )}
+    </div>
+  );
+};
+
+interface SelectFieldProps {
+  name: string;
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: { label: string; value: string }[];
+  placeholder?: string;
+  required: boolean;
+  errorMessage?: string;
+}
+
+const SelectField: React.FC<SelectFieldProps> = ({
+  name,
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  required,
+  errorMessage
+}) => {
+  return (
+    <div className={styles.inputField}>
+      <label htmlFor={name} className={styles.inputLabel}>
+        {label}
+        {required && <span className={styles.required}> *</span>}
+      </label>
+      <select
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={clsx(
+          styles.input,
+          errorMessage && styles.inputError
+        )}
+        required={required}
+        aria-describedby={errorMessage ? `${name}-error` : undefined}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      {errorMessage && (
+        <span id={`${name}-error`} className={styles.inputErrorLabel} role="alert">
           {errorMessage}
         </span>
       )}
